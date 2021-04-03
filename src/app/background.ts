@@ -5,17 +5,20 @@ chrome.webRequest.onBeforeRequest.addListener(
     try {
       if (!details.requestBody?.raw?.[0]?.bytes) return;
 
-      const body = enc.decode(details.requestBody.raw[0].bytes);
+      const body = enc
+        .decode(details.requestBody.raw[0].bytes)
+        .replace(/\s/g, "");
 
       if (typeof body !== "string") return;
 
       const isGraphQL =
-        body.replace(/\s/g, "").includes('"query":"query') ||
-        body.replace(/\s/g, "").includes('"query":"mutation');
+        body.includes('"query":"query') || body.includes('"query":"mutation');
 
       if (isGraphQL) {
-        chrome.browserAction.setBadgeBackgroundColor({ color: "#10B981" });
-        chrome.browserAction.setBadgeText({ text: "✓", tabId: details.tabId });
+        chrome.browserAction.setIcon({
+          tabId: details.tabId,
+          path: "/icons/graphql-true.png",
+        });
       }
     } catch (err) {}
   },

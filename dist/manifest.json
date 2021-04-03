@@ -1,18 +1,17 @@
 {
     "name": "Is This GraphQL",
-    "version": "0.0.1",
+    "version": "1.0.0",
     "manifest_version": 2,
-    "description": "Boilerplate for a Chrome extension with TypeScript, React, and Webpack.",
+    "description": "Detect if a website is using GraphQL",
     "homepage_url": "https://graphql.org",
     "icons": {
-      "16": "icons/graphql.png",
-      "48": "icons/graphql.png",
-      "128": "icons/graphql.png"
+      "16": "icons/graphql-16.png",
+      "48": "icons/graphql-48.png",
+      "128": "icons/graphql-128.png"
     },
     "browser_action": {
       "default_title": "GraphQL"
     },
-    "default_locale": "en",
     "background": {
       "scripts": [
         "js/background.js"
@@ -22,17 +21,6 @@
     "permissions": [
       "webRequest",
       "https://*/*"
-    ],
-    "content_security_policy": "default-src 'self';",
-    "content_scripts": [
-      {
-        "matches": [
-          "https://*/*"
-        ],
-        "js": [
-          "js/content.js"
-        ]
-      }
     ]
   }
   
