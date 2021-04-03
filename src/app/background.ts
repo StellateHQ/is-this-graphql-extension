@@ -12,7 +12,9 @@ chrome.webRequest.onBeforeRequest.addListener(
       if (typeof body !== "string") return;
 
       const isGraphQL =
-        body.includes('"query":"query') || body.includes('"query":"mutation');
+        body.includes('"query":"{') ||
+        body.includes('"query":"query') ||
+        body.includes('"query":"mutation');
 
       if (isGraphQL) {
         chrome.browserAction.setIcon({
