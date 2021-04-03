@@ -1,9 +1,11 @@
 {
-  "name": "tsrwpcx",
+  "name": "is-this-graphql",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
+    "dev": "nodemon --watch src -e ts,tsx,js,jsx,json --exec \"npm run build\"",
+    "build": "webpack",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -14,6 +16,7 @@
     "@types/react": "^16.7.8",
     "@types/react-dom": "^16.0.11",
     "css-loader": "^1.0.1",
+    "nodemon": "^2.0.7",
     "style-loader": "^0.23.1",
     "ts-loader": "^5.3.1",
     "typescript": "^3.1.6",
