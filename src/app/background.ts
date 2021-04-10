@@ -1,8 +1,18 @@
+import * as psl from "psl";
+
 const enc = new TextDecoder("utf-8");
 
 chrome.webRequest.onBeforeRequest.addListener(
   (details) => {
     try {
+      // Only check requests from the page itself, not any embeds
+      const initiator = psl.parse(new URL(details.initiator).hostname);
+      const url = psl.parse(new URL(details.url).hostname);
+
+      // @ts-ignore the TS types for the psl module are incorrect, .domain does exist.
+      if (initiator.domain !== url.domain) return;
+
+      // JSON body
       if (!details.requestBody?.raw?.[0]?.bytes) return;
 
       const body = enc
