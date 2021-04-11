@@ -6,7 +6,6 @@ type RequestMeta = {
   body?: boolean;
   param?: boolean;
   contentType?: boolean;
-  startTime?: Date;
 };
 const requests = new Map<string, RequestMeta>();
 
@@ -47,7 +46,6 @@ chrome.webRequest.onSendHeaders.addListener(
       requests.set(details.requestId, {
         ...(requests.get(details.requestId) ?? {}),
         contentType: isContentType,
-        startTime: new Date(details.timeStamp),
       });
     } catch (err) {}
   },
