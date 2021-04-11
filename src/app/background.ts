@@ -54,7 +54,7 @@ chrome.webRequest.onSendHeaders.addListener(
 );
 
 /**
- * On Completed checks whether any heuristics were true
+ * On Completed checks whether any heuristics were true and, if they were, double-checks whether it's a false positive
  */
 chrome.webRequest.onCompleted.addListener(
   (details) => {
@@ -63,10 +63,23 @@ chrome.webRequest.onCompleted.addListener(
       if (!request) return;
 
       if (Object.values(request).some((value) => value === true)) {
-        chrome.browserAction.setIcon({
-          tabId: details.tabId,
-          path: "/icons/graphql-true.png",
-        });
+        // Check the false positive db
+        let url = new URL(`https://is-this-graphql.recc.workers.dev`);
+        if (details.initiator)
+          url.searchParams.set(`i`, new URL(details.initiator).hostname);
+        url.searchParams.set(`r`, new URL(details.url).hostname);
+
+        fetch(url.toString())
+          .then((res) => res.json())
+          .then((data) => {
+            // False positive!
+            if (data === false) return;
+
+            chrome.browserAction.setIcon({
+              tabId: details.tabId,
+              path: "/icons/graphql-true.png",
+            });
+          });
       }
 
       requests.delete(details.requestId);
