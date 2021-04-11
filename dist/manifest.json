@@ -10,7 +10,8 @@
       "128": "icons/graphql-128.png"
     },
     "browser_action": {
-      "default_title": "GraphQL"
+      "default_title": "GraphQL",
+      "default_popup": "popup.html"
     },
     "background": {
       "scripts": [

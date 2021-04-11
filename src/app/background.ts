@@ -2,12 +2,23 @@ import * as psl from "psl";
 
 const enc = new TextDecoder("utf-8");
 
-type RequestMeta = {
+type Heuristics = {
   body?: boolean;
   param?: boolean;
   contentType?: boolean;
 };
-const requests = new Map<string, RequestMeta>();
+const requests = new Map<string, Heuristics>();
+const tabs = new Map<number, Heuristics>();
+
+/**
+ * On Message is used for communicating between the popup and this background script
+ */
+chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
+  sendResponse(handlers[message.type]?.(message) || null);
+});
+const handlers = {
+  getResult: (message) => tabs.get(message.tabId),
+};
 
 /**
  * On Before Request checks for GraphQL-related data in the body
@@ -26,7 +37,9 @@ chrome.webRequest.onBeforeRequest.addListener(
         body: isBody,
         param: isParam,
       });
-    } catch (err) {}
+    } catch (err) {
+      console.error(err);
+    }
   },
   { urls: ["<all_urls>"] },
   ["requestBody"]
@@ -47,7 +60,9 @@ chrome.webRequest.onSendHeaders.addListener(
         ...(requests.get(details.requestId) ?? {}),
         contentType: isContentType,
       });
-    } catch (err) {}
+    } catch (err) {
+      console.error(err);
+    }
   },
   { urls: ["<all_urls>"] },
   ["requestHeaders"]
@@ -59,31 +74,43 @@ chrome.webRequest.onSendHeaders.addListener(
 chrome.webRequest.onCompleted.addListener(
   (details) => {
     try {
-      const request = requests.get(details.requestId);
-      if (!request) return;
+      const request = requests.get(details.requestId) ?? {};
+      const tab = tabs.get(details.tabId) ?? {};
+      const isGraphQL = Object.values(request).some((value) => value === true);
 
-      if (Object.values(request).some((value) => value === true)) {
-        // Check the false positive db
-        let url = new URL(`https://is-this-graphql.recc.workers.dev`);
-        if (details.initiator)
-          url.searchParams.set(`i`, new URL(details.initiator).hostname);
-        url.searchParams.set(`r`, new URL(details.url).hostname);
-
-        fetch(url.toString())
-          .then((res) => res.json())
-          .then((data) => {
-            // False positive!
-            if (data === false) return;
-
-            chrome.browserAction.setIcon({
-              tabId: details.tabId,
-              path: "/icons/graphql-true.png",
-            });
-          });
-      }
-
+      // Delete the per-request result...
       requests.delete(details.requestId);
-    } catch (err) {}
+      // ...and store it per-tab instead
+      tabs.set(details.tabId, {
+        // If the tab already has true in any keys, keep it there
+        // only overwrite potential false results
+        body: tab.body || request.body,
+        contentType: tab.contentType || request.contentType,
+        param: tab.param || request.param,
+      });
+
+      if (!isGraphQL) return;
+
+      // Check the false positive db
+      let url = new URL(`https://is-this-graphql.recc.workers.dev`);
+      if (details.initiator)
+        url.searchParams.set(`i`, new URL(details.initiator).hostname);
+      url.searchParams.set(`r`, new URL(details.url).hostname);
+
+      fetch(url.toString())
+        .then((res) => res.json())
+        .then((data) => {
+          // False positive!
+          if (data === false) return;
+
+          chrome.browserAction.setIcon({
+            tabId: details.tabId,
+            path: "/icons/graphql-true.png",
+          });
+        });
+    } catch (err) {
+      console.error(err);
+    }
   },
   { urls: ["<all_urls>"] }
 );
