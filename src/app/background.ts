@@ -24,6 +24,8 @@ chrome.webRequest.onBeforeRequest.addListener(
 chrome.webRequest.onBeforeSendHeaders.addListener(
   (details) => {
     try {
+      if (!isFirstPartyRequest(details)) return;
+
       const isGraphQL = isGraphQLContentType(details);
       if (!isGraphQL) return;
 

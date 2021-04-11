@@ -1,7 +1,7 @@
 {
   "name": "is-this-graphql",
-  "version": "1.0.0",
-  "description": "",
+  "version": "1.1.0",
+  "description": "Check whether a website is using GraphQL or not at a glance!",
   "main": "index.js",
   "scripts": {
     "dev": "nodemon --watch src -e ts,tsx,js,jsx,json --exec \"npm run build\"",
