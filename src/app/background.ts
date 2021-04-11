@@ -2,18 +2,30 @@ import * as psl from "psl";
 
 const enc = new TextDecoder("utf-8");
 
+type RequestMeta = {
+  body?: boolean;
+  param?: boolean;
+  contentType?: boolean;
+  startTime?: Date;
+};
+const requests = new Map<string, RequestMeta>();
+
+/**
+ * On Before Request checks for GraphQL-related data in the body
+ */
 chrome.webRequest.onBeforeRequest.addListener(
   (details) => {
     try {
       if (!isFirstPartyRequest(details)) return;
 
-      const isGraphQL =
-        isJSONGraphQLBody(details) || isGraphQLQueryParam(details);
-      if (!isGraphQL) return;
+      const isBody = isJSONGraphQLBody(details);
+      const isParam = isGraphQLQueryParam(details);
+      if (!isBody && !isParam) return;
 
-      chrome.browserAction.setIcon({
-        tabId: details.tabId,
-        path: "/icons/graphql-true.png",
+      requests.set(details.requestId, {
+        ...(requests.get(details.requestId) ?? {}),
+        body: isBody,
+        param: isParam,
       });
     } catch (err) {}
   },
@@ -21,22 +33,48 @@ chrome.webRequest.onBeforeRequest.addListener(
   ["requestBody"]
 );
 
-chrome.webRequest.onBeforeSendHeaders.addListener(
+/**
+ * On Send Headers checks for GraphQL-related headers
+ */
+chrome.webRequest.onSendHeaders.addListener(
   (details) => {
     try {
       if (!isFirstPartyRequest(details)) return;
 
-      const isGraphQL = isGraphQLContentType(details);
-      if (!isGraphQL) return;
+      const isContentType = isGraphQLContentType(details);
+      if (!isContentType) return;
 
-      chrome.browserAction.setIcon({
-        tabId: details.tabId,
-        path: "/icons/graphql-true.png",
+      requests.set(details.requestId, {
+        ...(requests.get(details.requestId) ?? {}),
+        contentType: isContentType,
+        startTime: new Date(details.timeStamp),
       });
     } catch (err) {}
   },
   { urls: ["<all_urls>"] },
   ["requestHeaders"]
+);
+
+/**
+ * On Completed checks whether any heuristics were true
+ */
+chrome.webRequest.onCompleted.addListener(
+  (details) => {
+    try {
+      const request = requests.get(details.requestId);
+      if (!request) return;
+
+      if (Object.values(request).some((value) => value === true)) {
+        chrome.browserAction.setIcon({
+          tabId: details.tabId,
+          path: "/icons/graphql-true.png",
+        });
+      }
+
+      requests.delete(details.requestId);
+    } catch (err) {}
+  },
+  { urls: ["<all_urls>"] }
 );
 
 /**

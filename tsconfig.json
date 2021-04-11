@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+        "lib": ["ES2020", "dom"],
         "sourceMap": true,
         "target": "es6",
         "module": "commonjs",
