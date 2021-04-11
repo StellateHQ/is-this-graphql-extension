@@ -62,11 +62,13 @@ function isGraphQLQueryParam(details: chrome.webRequest.WebRequestDetails) {
   try {
     const params = new URL(details.url).searchParams;
     const query = params.get("query") ?? "";
+    const extensions = params.get("extensions") ?? "";
     return (
       // TODO: Just "{" might have too many false-positives?
       query.indexOf(`{`) === 0 ||
       query.indexOf(`query`) === 0 ||
-      query.indexOf(`mutation`) === 0
+      query.indexOf(`mutation`) === 0 ||
+      extensions.indexOf(`persistedQuery`) > -1
     );
   } catch (err) {
     return false;
@@ -89,7 +91,8 @@ function isJSONGraphQLBody(details: chrome.webRequest.WebRequestBodyDetails) {
     return (
       body.includes('"query":"{') ||
       body.includes('"query":"query') ||
-      body.includes('"query":"mutation')
+      body.includes('"query":"mutation') ||
+      body.includes(`"persistedQuery"`)
     );
   } catch (err) {
     return false;
