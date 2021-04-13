@@ -103,6 +103,20 @@ chrome.webRequest.onCompleted.addListener(
           // False positive!
           if (data === false) return;
 
+          chrome.browserAction.setPopup({
+            tabId: details.tabId,
+            popup: "popup.html?is-graphql=true",
+          });
+          chrome.browserAction.setIcon({
+            tabId: details.tabId,
+            path: "/icons/graphql-true.png",
+          });
+        })
+        .catch((err) => {
+          chrome.browserAction.setPopup({
+            tabId: details.tabId,
+            popup: "popup.html?is-graphql=true",
+          });
           chrome.browserAction.setIcon({
             tabId: details.tabId,
             path: "/icons/graphql-true.png",
@@ -181,9 +195,13 @@ function isJSONGraphQLBody(details: chrome.webRequest.WebRequestBodyDetails) {
  * To avoid false positives with embeds/iframes/other third-party scripts on a page we make sure the page itself sent the request
  */
 function isFirstPartyRequest(details: chrome.webRequest.WebRequestDetails) {
-  const initiator = psl.parse(new URL(details.initiator).hostname);
-  const url = psl.parse(new URL(details.url).hostname);
+  try {
+    const initiator = psl.parse(new URL(details.initiator).hostname);
+    const url = psl.parse(new URL(details.url).hostname);
 
-  // @ts-ignore the TS types for the psl module are incorrect, .domain does exist.
-  return initiator.domain === url.domain;
+    // @ts-ignore the TS types for the psl module are incorrect, .domain does exist.
+    return initiator.domain === url.domain;
+  } catch (err) {
+    return false;
+  }
 }

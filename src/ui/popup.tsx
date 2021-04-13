@@ -1,29 +1,10 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import useInterval from "@use-it/interval";
 
 import "../styles/popup.css";
 
 function Hello() {
-  const [result, setResult] = React.useState<{
-    body?: boolean;
-    param?: boolean;
-    contentType?: boolean;
-  }>({});
-
-  // Every second check whether the result the background script has computed has changed
-  useInterval(() => {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      chrome.runtime.sendMessage(
-        { type: "getResult", tabId: tabs[0].id },
-        (res) => {
-          setResult(res ?? {});
-        }
-      );
-    });
-  }, 1000);
-
-  const isGraphQL = Object.values(result).some((value) => value === true);
+  const isGraphQL = window.location.search.includes("is-graphql=true");
 
   return (
     <div className={`popup ${isGraphQL ? "popup-success" : ""}`}>
