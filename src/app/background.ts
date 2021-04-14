@@ -24,9 +24,9 @@ const handlers = {
  * On Before Request checks for GraphQL-related data in the body
  */
 chrome.webRequest.onBeforeRequest.addListener(
-  (details) => {
+  async (details) => {
     try {
-      if (!isFirstPartyRequest(details)) return;
+      if (!(await checkFirstPartyRequest(details))) return;
 
       const isBody = isJSONGraphQLBody(details);
       const isParam = isGraphQLQueryParam(details);
@@ -49,9 +49,9 @@ chrome.webRequest.onBeforeRequest.addListener(
  * On Send Headers checks for GraphQL-related headers
  */
 chrome.webRequest.onSendHeaders.addListener(
-  (details) => {
+  async (details) => {
     try {
-      if (!isFirstPartyRequest(details)) return;
+      if (!(await checkFirstPartyRequest(details))) return;
 
       const isContentType = isGraphQLContentType(details);
       if (!isContentType) return;
@@ -72,7 +72,7 @@ chrome.webRequest.onSendHeaders.addListener(
  * On Completed checks whether any heuristics were true and, if they were, double-checks whether it's a false positive
  */
 chrome.webRequest.onCompleted.addListener(
-  (details) => {
+  async (details) => {
     try {
       const request = requests.get(details.requestId) ?? {};
       const tab = tabs.get(details.tabId) ?? {};
@@ -91,20 +91,21 @@ chrome.webRequest.onCompleted.addListener(
 
       if (!isGraphQL) return;
 
-      isKnownFalsePositive(details.url, details.initiator).then(
-        (isFalsePositive) => {
-          if (isFalsePositive) return;
-
-          chrome.browserAction.setPopup({
-            tabId: details.tabId,
-            popup: "popup.html?is-graphql=true",
-          });
-          chrome.browserAction.setIcon({
-            tabId: details.tabId,
-            path: "/icons/graphql-true.png",
-          });
-        }
+      const isFalsePositive = checkKnownFalsePositive(
+        details.url,
+        details.initiator
       );
+
+      if (isFalsePositive) return;
+
+      chrome.browserAction.setPopup({
+        tabId: details.tabId,
+        popup: "popup.html?is-graphql=true",
+      });
+      chrome.browserAction.setIcon({
+        tabId: details.tabId,
+        path: "/icons/graphql-true.png",
+      });
     } catch (err) {
       console.error(err);
     }
@@ -174,25 +175,39 @@ function isJSONGraphQLBody(details: chrome.webRequest.WebRequestBodyDetails) {
   }
 }
 
-/**
- * To avoid false positives with embeds/iframes/other third-party scripts on a page we make sure the page itself sent the request
- */
-function isFirstPartyRequest(details: chrome.webRequest.WebRequestDetails) {
-  try {
-    const initiator = psl.parse(new URL(details.initiator).hostname);
-    const url = psl.parse(new URL(details.url).hostname);
+// tabId: The ID of the tab in which the request takes place.
+// Set to -1 if the request isn't related to a tab.
+const NO_TAB = -1;
 
-    // @ts-ignore the TS types for the psl module are incorrect, .domain does exist.
-    return initiator.domain === url.domain;
+/**
+ * To avoid tracking embeds/iframes/other third-party scripts on a page we make sure the page itself sent the request
+ */
+function checkFirstPartyRequest(
+  details: chrome.webRequest.WebRequestDetails
+): Promise<boolean> {
+  try {
+    return new Promise((res) => {
+      if (details.tabId === NO_TAB) return res(false);
+
+      chrome.tabs.get(details.tabId, (tab) => {
+        if (!tab.url) return res(false);
+
+        const initiator = psl.parse(new URL(details.initiator).hostname);
+        const url = psl.parse(new URL(tab.url).hostname);
+
+        // @ts-ignore the TS types for the psl module are incorrect, .domain does exist.
+        res(initiator.domain === url.domain);
+      });
+    });
   } catch (err) {
-    return false;
+    return Promise.resolve(false);
   }
 }
 
 /**
  * Check the "known false positive" list to ensure the website is actually using GraphQL
  */
-function isKnownFalsePositive(
+function checkKnownFalsePositive(
   requestUrl: string,
   initiatorUrl?: string
 ): Promise<boolean> {
@@ -207,7 +222,7 @@ function isKnownFalsePositive(
   return fetch(isGraphQLAPIUrl.toString())
     .then((res) => res.json())
     .then((data) => {
-      // False positive!
+      // Known false positive!
       if (data === false) return true;
 
       return false;
