@@ -91,17 +91,9 @@ chrome.webRequest.onCompleted.addListener(
 
       if (!isGraphQL) return;
 
-      // Check the false positive db
-      let url = new URL(`https://is-this-graphql.recc.workers.dev`);
-      if (details.initiator)
-        url.searchParams.set(`i`, new URL(details.initiator).hostname);
-      url.searchParams.set(`r`, new URL(details.url).hostname);
-
-      fetch(url.toString())
-        .then((res) => res.json())
-        .then((data) => {
-          // False positive!
-          if (data === false) return;
+      isKnownFalsePositive(details.url, details.initiator).then(
+        (isFalsePositive) => {
+          if (isFalsePositive) return;
 
           chrome.browserAction.setPopup({
             tabId: details.tabId,
@@ -111,17 +103,8 @@ chrome.webRequest.onCompleted.addListener(
             tabId: details.tabId,
             path: "/icons/graphql-true.png",
           });
-        })
-        .catch((err) => {
-          chrome.browserAction.setPopup({
-            tabId: details.tabId,
-            popup: "popup.html?is-graphql=true",
-          });
-          chrome.browserAction.setIcon({
-            tabId: details.tabId,
-            path: "/icons/graphql-true.png",
-          });
-        });
+        }
+      );
     } catch (err) {
       console.error(err);
     }
@@ -204,4 +187,32 @@ function isFirstPartyRequest(details: chrome.webRequest.WebRequestDetails) {
   } catch (err) {
     return false;
   }
+}
+
+/**
+ * Check the "known false positive" list to ensure the website is actually using GraphQL
+ */
+function isKnownFalsePositive(
+  requestUrl: string,
+  initiatorUrl?: string
+): Promise<boolean> {
+  // Check the false positive db
+  let isGraphQLAPIUrl = new URL(`https://is-this-graphql.recc.workers.dev`);
+
+  if (initiatorUrl)
+    isGraphQLAPIUrl.searchParams.set(`i`, new URL(initiatorUrl).hostname);
+
+  isGraphQLAPIUrl.searchParams.set(`r`, new URL(requestUrl).hostname);
+
+  return fetch(isGraphQLAPIUrl.toString())
+    .then((res) => res.json())
+    .then((data) => {
+      // False positive!
+      if (data === false) return true;
+
+      return false;
+    })
+    .catch((err) => {
+      return false;
+    });
 }
