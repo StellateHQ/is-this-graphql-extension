@@ -91,7 +91,7 @@ chrome.webRequest.onCompleted.addListener(
 
       if (!isGraphQL) return;
 
-      const isFalsePositive = checkKnownFalsePositive(
+      const isFalsePositive = await checkKnownFalsePositive(
         details.url,
         details.initiator
       );
@@ -194,7 +194,6 @@ function checkFirstPartyRequest(
 
         const initiator = psl.parse(new URL(details.initiator).hostname);
         const url = psl.parse(new URL(tab.url).hostname);
-
         // @ts-ignore the TS types for the psl module are incorrect, .domain does exist.
         res(initiator.domain === url.domain);
       });
