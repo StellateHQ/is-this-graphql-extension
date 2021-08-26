@@ -104,7 +104,7 @@ chrome.webRequest.onCompleted.addListener(
       });
       chrome.browserAction.setIcon({
         tabId: details.tabId,
-        path: "/icons/graphql-true.png",
+        path: "/icons/icon-graphql-yes.png",
       });
     } catch (err) {
       console.error(err);
