@@ -98,13 +98,25 @@ chrome.webRequest.onCompleted.addListener(
 
       if (isFalsePositive) return;
 
-      chrome.browserAction.setPopup({
-        tabId: details.tabId,
-        popup: "popup.html?is-graphql=true",
-      });
       chrome.browserAction.setIcon({
         tabId: details.tabId,
-        path: "/icons/graphql-true.png",
+        path: "/icons/icon-graphql-yes.png",
+      });
+
+      chrome.browserAction.getPopup({ tabId: details.tabId }, (url) => {
+        const parsed = new URL(url);
+        const params = new URLSearchParams(parsed.search.replace(/^\?/, ""));
+        const apis = params.getAll("graphql-api");
+        params.set("is-graphql", "true");
+        params.delete("graphql-api");
+        // Only do each unique API once
+        [...new Set([...apis, details.url])].forEach((api) => {
+          params.append("graphql-api", api);
+        });
+        chrome.browserAction.setPopup({
+          tabId: details.tabId,
+          popup: "popup.html?" + params.toString(),
+        });
       });
     } catch (err) {
       console.error(err);
