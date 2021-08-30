@@ -5,33 +5,44 @@ import "../styles/font.css";
 import "../styles/popup.css";
 
 function Hello() {
-  const isGraphQL = window.location.search.includes("is-graphql=true");
+  const params = new URLSearchParams(window.location.search.replace(/^\?/, ""));
+  const isGraphQL = params.get("is-graphql") === "true";
+  const apis = params.getAll("graphql-api");
 
   return (
     <div className={`popup ${isGraphQL ? "popup-success" : ""}`}>
-        {isGraphQL ? (
-          <>
-            <div className="hero">
-              <YesGraphQLIcon className="hero-icon" />
-              <h2>Yes, it’s GraphQL</h2>
-            </div>
+      {isGraphQL ? (
+        <>
+          <div className="hero">
+            <YesGraphQLIcon className="hero-icon" />
+            <h2>Yes, it’s GraphQL</h2>
+          </div>
+          {apis.length > 0 && (
             <div className="apis">
-              <a href="" target="_blank" className="api">github.com/api/graphql</a>
-              <a href="" target="_blank" className="api">xyz.com/rest-must-die/graphql/rest-must-die/graphql</a>
+              {apis.map((url) => (
+                <a href={url} key={url} target="_blank" className="api">
+                  {url}
+                </a>
+              ))}
             </div>
-          </>
-        ) : (
-          <>
-            <div className="hero">
-              <NoGraphQLIcon className="hero-icon" />
-              <h2>No, it’s not  GraphQL (yet)</h2>
-            </div>
-          </>
-        )}
+          )}
+        </>
+      ) : (
+        <>
+          <div className="hero">
+            <NoGraphQLIcon className="hero-icon" />
+            <h2>No, it’s not GraphQL (yet)</h2>
+          </div>
+        </>
+      )}
       <div className="subline">
         <p className="made-by">
           <span>Made by</span>
-          <a target="_blank" href="https://graphcdn.io" className="graphcdn-logo">
+          <a
+            target="_blank"
+            href="https://graphcdn.io"
+            className="graphcdn-logo"
+          >
             <GraphCDNIcon /> GraphCDN
           </a>
         </p>
@@ -110,22 +121,22 @@ function YesGraphQLIcon(props) {
         stroke-width="3"
         stroke-linecap="round"
       >
-        <path d="M40.5-1.19v3.62"/>
-        <path d="M56.45,1.98 l-1.39,3.35"/>
-        <path d="M69.98,11.02 l-2.56,2.56"/>
-        <path d="M79.02,24.55 l-3.35,1.39"/>
+        <path d="M40.5-1.19v3.62" />
+        <path d="M56.45,1.98 l-1.39,3.35" />
+        <path d="M69.98,11.02 l-2.56,2.56" />
+        <path d="M79.02,24.55 l-3.35,1.39" />
         <path d="M82.19,40.5h-3.62" />
-        <path d="M79.02,56.45 l-3.35-1.39"/>
-        <path d="M69.98,69.98 l-2.56-2.56"/>
-        <path d="M56.45,79.02 l-1.39-3.35"/>
+        <path d="M79.02,56.45 l-3.35-1.39" />
+        <path d="M69.98,69.98 l-2.56-2.56" />
+        <path d="M56.45,79.02 l-1.39-3.35" />
         <path d="M40.5,82.19v-3.62" />
-        <path d="M24.55,79.02 l1.39-3.35"/>
-        <path d="M11.02,69.98 l2.56-2.56"/>
-        <path d="M1.98,56.45 l3.35-1.39"/>
-        <path d="M-1.19,40.5h3.62"/>
-        <path d="M1.98,24.55 l3.35,1.39"/>
-        <path d="M11.02,11.02 l2.56,2.56"/>
-        <path d="M24.55,1.98 l1.39,3.35"/>
+        <path d="M24.55,79.02 l1.39-3.35" />
+        <path d="M11.02,69.98 l2.56-2.56" />
+        <path d="M1.98,56.45 l3.35-1.39" />
+        <path d="M-1.19,40.5h3.62" />
+        <path d="M1.98,24.55 l3.35,1.39" />
+        <path d="M11.02,11.02 l2.56,2.56" />
+        <path d="M24.55,1.98 l1.39,3.35" />
       </g>
       <path
         fill-rule="evenodd"
@@ -147,12 +158,18 @@ function GraphCDNIcon(props) {
       viewBox="0 0 22 24"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <path opacity="0.6" d="M6.2,10.53l9.82-7.87l-4.01-2.31c-0.82-0.46-1.74-0.46-2.54,0L1.25,5.09c-0.39,0.21-0.7,0.52-0.92,0.9 L0.27,6.14l2.97,3.52L6.2,10.53L6.2,10.53z"/>
-      <path d="M10.45,13.78l-7.6-5.8C1.76,7.14,1.4,5.82,1.57,4.9L1.26,5.09c-0.39,0.21-0.7,0.52-0.92,0.9L0.31,6.04 C0.29,6.07,0.27,6.09,0.27,6.12C0.09,6.46,0,6.86,0,7.26v9.47c0,0.92,0.46,1.72,1.26,2.18l2.2,1.26L10.45,13.78L10.45,13.78z"/>
-      <path opacity="0.6" d="M16.74,14.12L4.26,20.65l5.22,3.01c0.8,0.46,1.72,0.46,2.54,0l4.11-2.38l4.12-2.36 c0.41-0.25,0.73-0.58,0.95-0.99l-0.29-0.68l-2.44-2.79L16.74,14.12L16.74,14.12z"/>
-      <path d="M21.21,17.92l0.03-0.07c0.17-0.34,0.26-0.71,0.26-1.12V8.64c0-0.75-0.29-1.38-0.85-1.89 c-0.09-0.07-0.19-0.15-0.27-0.2l-7.07,4.61l3.44,2.96l2.18,1.9c0.92,0.78,1.19,2.02,0.87,3.15l0.46-0.26 C20.66,18.65,20.99,18.33,21.21,17.92L21.21,17.92z"/>
+      <path
+        opacity="0.6"
+        d="M6.2,10.53l9.82-7.87l-4.01-2.31c-0.82-0.46-1.74-0.46-2.54,0L1.25,5.09c-0.39,0.21-0.7,0.52-0.92,0.9 L0.27,6.14l2.97,3.52L6.2,10.53L6.2,10.53z"
+      />
+      <path d="M10.45,13.78l-7.6-5.8C1.76,7.14,1.4,5.82,1.57,4.9L1.26,5.09c-0.39,0.21-0.7,0.52-0.92,0.9L0.31,6.04 C0.29,6.07,0.27,6.09,0.27,6.12C0.09,6.46,0,6.86,0,7.26v9.47c0,0.92,0.46,1.72,1.26,2.18l2.2,1.26L10.45,13.78L10.45,13.78z" />
+      <path
+        opacity="0.6"
+        d="M16.74,14.12L4.26,20.65l5.22,3.01c0.8,0.46,1.72,0.46,2.54,0l4.11-2.38l4.12-2.36 c0.41-0.25,0.73-0.58,0.95-0.99l-0.29-0.68l-2.44-2.79L16.74,14.12L16.74,14.12z"
+      />
+      <path d="M21.21,17.92l0.03-0.07c0.17-0.34,0.26-0.71,0.26-1.12V8.64c0-0.75-0.29-1.38-0.85-1.89 c-0.09-0.07-0.19-0.15-0.27-0.2l-7.07,4.61l3.44,2.96l2.18,1.9c0.92,0.78,1.19,2.02,0.87,3.15l0.46-0.26 C20.66,18.65,20.99,18.33,21.21,17.92L21.21,17.92z" />
     </svg>
-  )
+  );
 }
 
 // --------------
