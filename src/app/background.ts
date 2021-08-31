@@ -228,7 +228,10 @@ function checkKnownFalsePositive(
   if (initiatorUrl)
     isGraphQLAPIUrl.searchParams.set(`i`, new URL(initiatorUrl).hostname);
 
-  isGraphQLAPIUrl.searchParams.set(`r`, new URL(requestUrl).hostname);
+  isGraphQLAPIUrl.searchParams.set(
+    `r`,
+    new URL(requestUrl).hostname + new URL(requestUrl).pathname
+  );
 
   return fetch(isGraphQLAPIUrl.toString())
     .then((res) => res.json())
