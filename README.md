@@ -2,6 +2,8 @@
 
 Chrome extension based on [duo-labs/chrome-extension-boilerplate](https://github.com/duo-labs/chrome-extension-boilerplate) that detects whether a website is using GraphQL.
 
+**Install it from the [Chrome Web Store](https://chrome.google.com/webstore/detail/is-this-graphql/bpddjcoknlkjonemmdokaeeplmjhhnhh)**
+
 ## Get started
 
 Clone this repository, and then, in this directory:
