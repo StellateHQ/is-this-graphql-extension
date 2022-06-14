@@ -3,7 +3,7 @@
     "version": "1.3.0",
     "manifest_version": 2,
     "description": "See whether a website is using GraphQL at a glance",
-    "homepage_url": "https://graphcdn.io",
+    "homepage_url": "https://stellate.co",
     "icons": {
       "16": "icons/icon-graphql-no-16.png",
       "48": "icons/icon-graphql-no-48.png",
