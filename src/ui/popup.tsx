@@ -40,10 +40,10 @@ function Hello() {
           <span>Made by</span>
           <a
             target="_blank"
-            href="https://graphcdn.io"
-            className="graphcdn-logo"
+            href="https://stellate.co"
+            className="stellate-logo"
           >
-            <GraphCDNIcon /> GraphCDN
+            <StellateIcon /> Stellate
           </a>
         </p>
         <a
@@ -53,7 +53,7 @@ function Hello() {
               { active: true, currentWindow: true },
               function (tabs) {
                 chrome.tabs.create({
-                  url: `mailto:extension@graphcdn.io?subject=${encodeURIComponent(
+                  url: `mailto:extension@stellate.co?subject=${encodeURIComponent(
                     `False ${isGraphQL ? "positive" : "negative"} for ${
                       tabs[0]?.url || "ENTER URL HERE"
                     }`
@@ -67,7 +67,7 @@ function Hello() {
             );
           }}
           // No-JS fallback
-          href={`mailto:extension@graphcdn.io?subject=${encodeURIComponent(
+          href={`mailto:extension@stellate.co?subject=${encodeURIComponent(
             `False ${isGraphQL ? "positive" : "negative"} for ENTER URL HERE`
           )}&body=${encodeURIComponent(
             `How do you know this website actually ${
@@ -148,7 +148,7 @@ function YesGraphQLIcon(props) {
   );
 }
 
-function GraphCDNIcon(props) {
+function StellateIcon(props) {
   return (
     <svg
       {...props}

@@ -82,7 +82,7 @@ h2 {
     opacity: var(--subline-opacity);
 }
 
-.graphcdn-logo {
+.stellate-logo {
     display: flex;
     align-items: center;
     margin-left: 8px;
@@ -92,11 +92,11 @@ h2 {
     transition: opacity 0.15s ease;
 }
 
-.graphcdn-logo:hover {
+.stellate-logo:hover {
     opacity: 1;
 }
 
-.graphcdn-logo svg {
+.stellate-logo svg {
     margin-right: 5px;
 }
 
