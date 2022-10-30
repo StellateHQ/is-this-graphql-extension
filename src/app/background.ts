@@ -6,6 +6,7 @@ type Heuristics = {
   body?: boolean;
   param?: boolean;
   contentType?: boolean;
+  isStellate?: boolean;
 };
 const requests = new Map<string, Heuristics>();
 const tabs = new Map<number, Heuristics>();
@@ -43,6 +44,33 @@ chrome.webRequest.onBeforeRequest.addListener(
   },
   { urls: ["<all_urls>"] },
   ["requestBody"]
+);
+
+/**
+ * On Headers Received checks for the X-Powered-By: Stellate header
+ */
+chrome.webRequest.onHeadersReceived.addListener(
+  async (details) => {
+    try {
+      if (!(await checkFirstPartyRequest(details))) return;
+
+      const isStellate = !!details.responseHeaders?.find(
+        (header) =>
+          header.name === "x-powered-by" &&
+          header.value.toLowerCase() === "stellate"
+      );
+      if (!isStellate) return;
+
+      requests.set(details.requestId, {
+        ...(requests.get(details.requestId) ?? {}),
+        isStellate,
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  },
+  { urls: ["<all_urls>"] },
+  ["responseHeaders"]
 );
 
 /**
@@ -87,6 +115,7 @@ chrome.webRequest.onCompleted.addListener(
         body: tab.body || request.body,
         contentType: tab.contentType || request.contentType,
         param: tab.param || request.param,
+        isStellate: tab.isStellate || request.isStellate,
       });
 
       if (!isGraphQL) return;
@@ -108,6 +137,9 @@ chrome.webRequest.onCompleted.addListener(
         const params = new URLSearchParams(parsed.search.replace(/^\?/, ""));
         const apis = params.getAll("graphql-api");
         params.set("is-graphql", "true");
+        if (tab.isStellate || request.isStellate) {
+          params.set("is-stellate", "true");
+        }
         params.delete("graphql-api");
         // Only do each unique API once
         [...new Set([...apis, details.url])].forEach((api) => {
