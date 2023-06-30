@@ -26,8 +26,10 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     chrome.tabs.executeScript(
       tabId,
       { code: "document.documentElement.outerHTML.includes('__typename')" },
-      (results) => {
+      async (results) => {
         if (!results[0]) return;
+
+        if (await checkKnownFalsePositive(tab.url)) return;
 
         chrome.browserAction.setIcon({
           tabId: tab.id,
