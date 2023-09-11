@@ -25,7 +25,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status === "complete" && tab?.status === "complete" && tab.url !== undefined) {
     chrome.tabs.executeScript(
       tabId,
-      { code: "document.documentElement.outerHTML.includes('__typename')" },
+      { code: "[...document.querySelectorAll('script')].some((script) => script.textContent.includes('__typename'))" },
       async (results) => {
         if (!results[0]) return;
 
