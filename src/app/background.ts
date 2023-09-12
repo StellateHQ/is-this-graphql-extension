@@ -21,6 +21,36 @@ const handlers = {
   getResult: (message) => tabs.get(message.tabId),
 };
 
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status === "complete" && tab?.status === "complete" && tab.url !== undefined) {
+    chrome.tabs.executeScript(
+      tabId,
+      { code: "[...document.querySelectorAll('script')].some((script) => script.textContent.includes('__typename'))" },
+      async (results) => {
+        if (!results[0]) return;
+
+        if (await checkKnownFalsePositive(tab.url)) return;
+
+        chrome.browserAction.setIcon({
+          tabId: tab.id,
+          path: "/icons/icon-graphql-yes.png"
+        });
+
+        chrome.browserAction.getPopup({ tabId }, (url) => {
+          const parsed = new URL(url);
+          const params = new URLSearchParams(parsed.search.replace(/^\?/, ""));
+          params.set("is-ssr", "true");
+          params.set("is-graphql", "true");
+          chrome.browserAction.setPopup({
+            tabId,
+            popup: "popup.html?" + params.toString()
+          });
+        });
+      }
+    );
+  }
+});
+
 /**
  * On Before Request checks for GraphQL-related data in the body
  */
