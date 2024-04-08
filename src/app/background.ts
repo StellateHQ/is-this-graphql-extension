@@ -1,4 +1,5 @@
 import * as psl from "psl";
+import { parse } from 'graphql';
 
 const enc = new TextDecoder("utf-8");
 
@@ -213,8 +214,13 @@ function isGraphQLQueryParam(details: chrome.webRequest.WebRequestDetails) {
     const params = new URL(details.url).searchParams;
     const query = params.get("query") ?? "";
     const extensions = params.get("extensions") ?? "";
+
+    try {
+      const result = query && !!parse(query as string);
+      return !!result
+    } catch (e) {}
+
     return (
-      // TODO: Just "{" might have too many false-positives?
       query.indexOf(`{`) === 0 ||
       query.indexOf(`query`) === 0 ||
       query.indexOf(`mutation`) === 0 ||
@@ -234,9 +240,16 @@ function isJSONGraphQLBody(details: chrome.webRequest.WebRequestBodyDetails) {
 
     const body = enc
       .decode(details.requestBody.raw[0].bytes)
-      .replace(/\s/g, "");
+      .replace(/\s/g, ""); 
 
     if (typeof body !== "string") return;
+
+    const json = tryParseJson(body);
+    if (json && typeof json.query === 'string') {
+      return !!parse(json.query as string);
+    } else if (json && json.extensions && typeof json.extensions === 'object' && 'persistedQuery' in json.extensions) {
+      return true;
+    }
 
     return (
       body.includes('"query":"{') ||
@@ -246,6 +259,14 @@ function isJSONGraphQLBody(details: chrome.webRequest.WebRequestBodyDetails) {
     );
   } catch (err) {
     return false;
+  }
+}
+
+function tryParseJson(x: string): Record<string, unknown> {
+  try {
+    return JSON.parse(x)
+  } catch (e) {
+    return undefined
   }
 }
 
