@@ -240,7 +240,7 @@ function isJSONGraphQLBody(details: chrome.webRequest.WebRequestBodyDetails) {
 
     const body = enc
       .decode(details.requestBody.raw[0].bytes) ;
-    const stringified = body.replace(/\s/g, "")
+    const stringified = body.replace(/\s/g, "");
 
     if (typeof body !== "string") return;
 
