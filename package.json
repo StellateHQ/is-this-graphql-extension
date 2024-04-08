@@ -26,6 +26,7 @@
   "dependencies": {
     "@types/psl": "^1.1.0",
     "@use-it/interval": "^1.0.0",
+    "graphql": "^16.8.1",
     "psl": "^1.8.0",
     "react": "^16.6.3",
     "react-dom": "^16.6.3"
