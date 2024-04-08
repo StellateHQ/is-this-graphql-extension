@@ -239,8 +239,8 @@ function isJSONGraphQLBody(details: chrome.webRequest.WebRequestBodyDetails) {
     if (!details.requestBody?.raw?.[0]?.bytes) return false;
 
     const body = enc
-      .decode(details.requestBody.raw[0].bytes)
-      .replace(/\s/g, ""); 
+      .decode(details.requestBody.raw[0].bytes) ;
+    const stringified = body.replace(/\s/g, "");
 
     if (typeof body !== "string") return;
 
@@ -252,10 +252,10 @@ function isJSONGraphQLBody(details: chrome.webRequest.WebRequestBodyDetails) {
     }
 
     return (
-      body.includes('"query":"{') ||
-      body.includes('"query":"query') ||
-      body.includes('"query":"mutation') ||
-      body.includes(`"persistedQuery"`)
+      stringified.includes('"query":"{') ||
+      stringified.includes('"query":"query') ||
+      stringified.includes('"query":"mutation') ||
+      stringified.includes(`"persistedQuery"`)
     );
   } catch (err) {
     return false;
