@@ -1,6 +1,6 @@
 {
   "name": "is-this-graphql",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "Check whether a website is using GraphQL or not at a glance!",
   "main": "index.js",
   "scripts": {
